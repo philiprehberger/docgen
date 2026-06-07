@@ -1,0 +1,12 @@
+@import "tailwindcss";
+
+@theme inline {
+  --font-sans: var(--font-geist-sans);
+  --font-mono: var(--font-geist-mono);
+}
+
+/* Force the dark color scheme regardless of OS preference so scrollbars,
+   form controls, and other native UI render to match the dark theme. */
+:root {
+  color-scheme: dark;
+}

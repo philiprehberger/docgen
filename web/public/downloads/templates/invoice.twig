@@ -1,0 +1,94 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>Invoice {{ invoice.number }}</title>
+<style>
+  * { box-sizing: border-box; }
+  body { font-family: -apple-system, "Segoe UI", system-ui, sans-serif; color: #1a1f29; margin: 0; padding: 0; }
+  .page { padding: 40px 56px; }
+  .header { display: flex; justify-content: space-between; align-items: flex-start; border-bottom: 2px solid #0c1426; padding-bottom: 20px; margin-bottom: 32px; }
+  .brand { font-size: 22px; font-weight: 700; letter-spacing: 0.5px; }
+  .meta { text-align: right; font-size: 13px; color: #4a5266; }
+  .meta strong { color: #0c1426; font-size: 14px; }
+  .parties { display: flex; gap: 48px; margin-bottom: 32px; }
+  .party { flex: 1; }
+  .party h3 { font-size: 11px; text-transform: uppercase; letter-spacing: 1.2px; color: #6b7280; margin: 0 0 8px; }
+  .party p { margin: 2px 0; font-size: 14px; line-height: 1.45; }
+  table { width: 100%; border-collapse: collapse; margin-bottom: 24px; font-size: 14px; }
+  thead th { text-align: left; background: #f2f4f8; padding: 10px 12px; font-size: 11px; text-transform: uppercase; letter-spacing: 1px; color: #4a5266; }
+  tbody td { padding: 12px; border-bottom: 1px solid #e6e9ee; vertical-align: top; }
+  td.qty, td.rate, td.amount, th.qty, th.rate, th.amount { text-align: right; white-space: nowrap; }
+  .totals { display: flex; justify-content: flex-end; margin-top: 8px; }
+  .totals table { width: 280px; }
+  .totals td { padding: 6px 12px; border: none; }
+  .totals tr.grand td { font-weight: 700; font-size: 16px; border-top: 2px solid #0c1426; padding-top: 12px; }
+  .footer { margin-top: 48px; font-size: 12px; color: #6b7280; border-top: 1px solid #e6e9ee; padding-top: 16px; }
+</style>
+</head>
+<body>
+<div class="page">
+  <div class="header">
+    <div>
+      <div class="brand">{{ sender.name }}</div>
+      <div style="font-size: 13px; color: #4a5266; margin-top: 4px;">{{ sender.tagline }}</div>
+    </div>
+    <div class="meta">
+      <div><strong>Invoice {{ invoice.number }}</strong></div>
+      <div>Issued: {{ invoice.issued_on }}</div>
+      <div>Due: {{ invoice.due_on }}</div>
+    </div>
+  </div>
+
+  <div class="parties">
+    <div class="party">
+      <h3>From</h3>
+      <p><strong>{{ sender.name }}</strong></p>
+      <p>{{ sender.address_line_1 }}</p>
+      <p>{{ sender.address_line_2 }}</p>
+      <p>{{ sender.email }}</p>
+    </div>
+    <div class="party">
+      <h3>Bill to</h3>
+      <p><strong>{{ client.name }}</strong></p>
+      <p>{{ client.contact }}</p>
+      <p>{{ client.email }}</p>
+    </div>
+  </div>
+
+  <table>
+    <thead>
+      <tr>
+        <th>Description</th>
+        <th class="qty">Qty</th>
+        <th class="rate">Rate</th>
+        <th class="amount">Amount</th>
+      </tr>
+    </thead>
+    <tbody>
+      {% for line in lines %}
+        <tr>
+          <td>{{ line.description }}</td>
+          <td class="qty">{{ line.quantity }}</td>
+          <td class="rate">{{ line.rate }}</td>
+          <td class="amount">{{ line.amount }}</td>
+        </tr>
+      {% endfor %}
+    </tbody>
+  </table>
+
+  <div class="totals">
+    <table>
+      <tr><td>Subtotal</td><td class="amount">{{ totals.subtotal }}</td></tr>
+      <tr><td>Tax ({{ totals.tax_rate }})</td><td class="amount">{{ totals.tax }}</td></tr>
+      <tr class="grand"><td>Total due</td><td class="amount">{{ totals.total }}</td></tr>
+    </table>
+  </div>
+
+  <div class="footer">
+    Payment by {{ invoice.due_on }}. Late payments accrue interest at {{ invoice.late_rate }} per month.
+    Questions: {{ sender.email }}.
+  </div>
+</div>
+</body>
+</html>

@@ -1,0 +1,93 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>Offer of employment — {{ candidate.first_name }} {{ candidate.last_name }}</title>
+<style>
+  body { font-family: Georgia, "Times New Roman", serif; color: #1a1f29; max-width: 720px; margin: 0 auto; padding: 64px 72px; line-height: 1.65; font-size: 14px; }
+  .letterhead { border-bottom: 1px solid #1a1f29; padding-bottom: 16px; margin-bottom: 32px; }
+  .letterhead .name { font-family: -apple-system, "Segoe UI", system-ui, sans-serif; font-size: 20px; font-weight: 600; letter-spacing: 0.5px; }
+  .letterhead .address { font-family: -apple-system, "Segoe UI", system-ui, sans-serif; font-size: 12px; color: #4a5266; margin-top: 4px; }
+  h1 { font-size: 22px; margin: 24px 0 16px; }
+  .terms { background: #f8f9fb; border-left: 3px solid #0c1426; padding: 20px 24px; margin: 24px 0; }
+  .terms dl { margin: 0; }
+  .terms dt { font-family: -apple-system, "Segoe UI", system-ui, sans-serif; font-size: 11px; text-transform: uppercase; letter-spacing: 1.2px; color: #4a5266; margin-top: 12px; }
+  .terms dt:first-child { margin-top: 0; }
+  .terms dd { margin: 4px 0 0; font-size: 15px; }
+  .signature { margin-top: 56px; }
+  .signature .line { border-bottom: 1px solid #1a1f29; width: 280px; margin-bottom: 6px; height: 28px; }
+  .signature .label { font-size: 12px; color: #4a5266; }
+  .signoff { margin-top: 32px; }
+</style>
+</head>
+<body>
+  <div class="letterhead">
+    <div class="name">{{ company.name }}</div>
+    <div class="address">{{ company.address }} · {{ company.contact_email }}</div>
+  </div>
+
+  <p>{{ letter.issued_on }}</p>
+
+  <p>
+    {{ candidate.first_name }} {{ candidate.last_name }}<br>
+    {{ candidate.address }}
+  </p>
+
+  <h1>Offer of employment</h1>
+
+  <p>Dear {{ candidate.first_name }},</p>
+
+  <p>
+    We are delighted to offer you the position of <strong>{{ position.title }}</strong> at
+    {{ company.name }}, reporting to {{ position.manager_name }}. This offer is contingent on
+    completion of the background check authorized in your application.
+  </p>
+
+  <div class="terms">
+    <dl>
+      <dt>Role</dt>
+      <dd>{{ position.title }}, {{ position.team }}</dd>
+
+      <dt>Start date</dt>
+      <dd>{{ position.start_date }}</dd>
+
+      <dt>Compensation</dt>
+      <dd>{{ position.salary }} per year, paid {{ position.pay_frequency }}.</dd>
+
+      <dt>Equity</dt>
+      <dd>{{ position.equity }}</dd>
+
+      <dt>Location</dt>
+      <dd>{{ position.location }}</dd>
+    </dl>
+  </div>
+
+  <p>
+    Your employment is at-will. Either party may terminate the relationship at any time, with or without
+    cause, subject to the terms of any signed agreements. This letter supersedes any prior verbal or
+    written commitments.
+  </p>
+
+  <p>
+    Please indicate acceptance by signing below and returning a copy to {{ company.contact_email }}
+    by {{ letter.respond_by }}.
+  </p>
+
+  <div class="signoff">
+    Welcome aboard,<br><br>
+    <strong>{{ signer.name }}</strong><br>
+    {{ signer.title }}<br>
+    {{ company.name }}
+  </div>
+
+  <div class="signature">
+    <div class="line"></div>
+    <div class="label">{{ candidate.first_name }} {{ candidate.last_name }} — Acceptance</div>
+  </div>
+
+  <div class="signature">
+    <div class="line"></div>
+    <div class="label">Date</div>
+  </div>
+</body>
+</html>
