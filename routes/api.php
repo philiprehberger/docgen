@@ -2,12 +2,17 @@
 
 use App\Http\Controllers\Api\V1\HealthController;
 use App\Http\Controllers\Api\V1\RenderController;
+use App\Http\Controllers\Api\V1\SandboxController;
 use App\Http\Controllers\Api\V1\TemplateController;
 use App\Http\Controllers\Api\V1\TemplateVersionController;
 use Illuminate\Support\Facades\Route;
 
 Route::prefix('v1')->group(function () {
     Route::get('/healthz', HealthController::class)->name('v1.healthz');
+
+    // Mint a sandbox key from the docs site's try-it console. Rate-limited
+    // per-IP downstream of the public-internet edge.
+    Route::post('/sandbox/keys', [SandboxController::class, 'mint'])->name('v1.sandbox.mint');
 
     // Signed download URLs deliberately sit outside the api.key middleware —
     // possession of the signature *is* the auth.
