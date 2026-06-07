@@ -26,6 +26,7 @@ class RenderEngine
     public function __construct(private readonly TwigEnvironmentFactory $twigFactory)
     {
         $this->register('html', new HtmlRenderer($twigFactory));
+        $this->register('pdf', new PdfRenderer);
     }
 
     public function register(string $format, FormatRenderer $renderer): void
@@ -53,6 +54,19 @@ class RenderEngine
 
         $twig = $this->twigFactory->make($render->version->body_snapshot, "render-{$render->id}");
         $html = $twig->render("render-{$render->id}", $data);
+
+        // SSRF guard on Chromium asset fetches. Only matters when the
+        // rendered HTML carries absolute URLs that the headless browser
+        // will try to load.
+        $forbidden = (new AssetUrlGuard)->findForbiddenUrls($html);
+
+        if ($forbidden !== []) {
+            throw new \RuntimeException(
+                'Template references one or more forbidden URLs (private/loopback/link-local hosts): '
+                . implode(', ', array_slice($forbidden, 0, 3))
+                . (count($forbidden) > 3 ? ' …' : '')
+            );
+        }
 
         $disk = Storage::disk(config('filesystems.default'));
         $renderedRoot = config('docgen.rendered_path', 'rendered');

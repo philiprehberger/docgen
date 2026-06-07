@@ -100,15 +100,15 @@ class RenderTest extends TestCase
     }
 
     #[Test]
-    public function it_rejects_unsupported_formats_at_phase_3(): void
+    public function it_rejects_unsupported_formats(): void
     {
         $template = $this->template();
         $this->freezeVersion($template);
 
-        // pdf + docx aren't registered until Phases 4 + 5.
+        // `tiff` is never going to be a registered format.
         $response = $this->auth()->postJson('/v1/renders?sync=true', [
             'template_id' => $template->id,
-            'formats' => ['pdf'],
+            'formats' => ['tiff'],
             'data' => ['name' => 'x'],
         ]);
 

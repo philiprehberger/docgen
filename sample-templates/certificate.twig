@@ -1,0 +1,59 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>Certificate of completion — {{ recipient.name }}</title>
+<style>
+  @page { size: A4 landscape; margin: 0; }
+  body { margin: 0; font-family: Georgia, "Times New Roman", serif; color: #1a1f29; }
+  .page { width: 297mm; height: 210mm; padding: 32mm; box-sizing: border-box; position: relative; background: linear-gradient(135deg, #fbfaf6 0%, #f3eee0 100%); }
+  .border { position: absolute; inset: 18mm; border: 2px solid #8a6f3c; outline: 1px solid #8a6f3c; outline-offset: 6px; }
+  .content { position: relative; height: 100%; display: flex; flex-direction: column; justify-content: center; align-items: center; text-align: center; }
+  .eyebrow { font-family: -apple-system, "Segoe UI", system-ui, sans-serif; font-size: 14px; letter-spacing: 4px; text-transform: uppercase; color: #8a6f3c; margin-bottom: 12px; }
+  .title { font-size: 56px; font-weight: 400; margin: 0 0 8px; letter-spacing: 1px; }
+  .subtitle { font-family: -apple-system, "Segoe UI", system-ui, sans-serif; font-size: 14px; color: #4a5266; margin-bottom: 36px; letter-spacing: 0.5px; }
+  .presented { font-size: 16px; color: #4a5266; margin-bottom: 4px; }
+  .recipient { font-size: 42px; font-weight: 600; color: #0c1426; margin: 8px 0 24px; }
+  .program { font-size: 18px; font-style: italic; max-width: 600px; margin-bottom: 56px; }
+  .footer { display: flex; gap: 80px; align-items: flex-end; }
+  .footer .col { display: flex; flex-direction: column; align-items: center; }
+  .footer .line { border-bottom: 1px solid #1a1f29; width: 200px; height: 28px; margin-bottom: 6px; }
+  .footer .label { font-family: -apple-system, "Segoe UI", system-ui, sans-serif; font-size: 11px; text-transform: uppercase; letter-spacing: 1.5px; color: #4a5266; }
+  .footer .name { font-size: 16px; font-weight: 500; }
+  .seal { font-family: -apple-system, "Segoe UI", system-ui, sans-serif; font-size: 10px; letter-spacing: 1.5px; color: #8a6f3c; text-transform: uppercase; margin-top: 16px; }
+</style>
+</head>
+<body>
+<div class="page">
+  <div class="border"></div>
+  <div class="content">
+    <div class="eyebrow">{{ institution.name }}</div>
+    <div class="title">Certificate of Completion</div>
+    <div class="subtitle">{{ institution.tagline }}</div>
+
+    <div class="presented">This certifies that</div>
+    <div class="recipient">{{ recipient.name }}</div>
+
+    <div class="program">
+      has successfully completed the requirements of <strong>{{ program.title }}</strong>,
+      a {{ program.duration }} program covering {{ program.summary }}.
+    </div>
+
+    <div class="footer">
+      <div class="col">
+        <div class="line"></div>
+        <div class="name">{{ signers.primary.name }}</div>
+        <div class="label">{{ signers.primary.title }}</div>
+      </div>
+      <div class="col">
+        <div class="line"></div>
+        <div class="name">{{ signers.secondary.name }}</div>
+        <div class="label">{{ signers.secondary.title }}</div>
+      </div>
+    </div>
+
+    <div class="seal">Awarded {{ award.date }} · Certificate No. {{ award.number }}</div>
+  </div>
+</div>
+</body>
+</html>
