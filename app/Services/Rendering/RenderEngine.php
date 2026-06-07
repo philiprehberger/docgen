@@ -27,6 +27,7 @@ class RenderEngine
     {
         $this->register('html', new HtmlRenderer($twigFactory));
         $this->register('pdf', new PdfRenderer);
+        $this->register('docx', new DocxRenderer);
     }
 
     public function register(string $format, FormatRenderer $renderer): void
