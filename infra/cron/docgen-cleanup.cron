@@ -1,0 +1,7 @@
+# Crontab entries for the docgen EC2 host.
+# Install with:  sudo cp infra/cron/docgen-cleanup.cron /etc/cron.d/docgen
+#
+# Sweeps expired rendered files past their signed-URL TTL + grace window.
+# Runs every 15 minutes.
+
+*/15 * * * * ubuntu cd /var/www/docgen/current && php artisan docgen:cleanup-renders >> /var/log/docgen/cleanup.log 2>&1

@@ -1,0 +1,739 @@
+openapi: 3.1.0
+info:
+  title: Docgen API
+  version: 0.5.0
+  description: |
+    Docgen is a document generation API. POST a template + data, get HTML,
+    PDF, or DOCX back.
+
+    This spec covers the surface delivered through Phase 5 of the build:
+    templates, versioning, field discovery, render submit (async + sync),
+    polling, signed-URL download, and HTML/PDF/DOCX output. SDKs are
+    generated from this spec; controllers conform to it.
+  contact:
+    name: Philip Rehberger
+    url: https://philiprehberger.com
+    email: hello@philiprehberger.com
+  license:
+    name: MIT
+    url: https://opensource.org/licenses/MIT
+servers:
+  - url: https://api.docgen.philiprehberger.com
+    description: Production API
+  - url: http://localhost:8000
+    description: Local dev
+security:
+  - bearerAuth: []
+tags:
+  - name: Health
+    description: Liveness and queue depth.
+  - name: Templates
+    description: HTML+Twig templates owned by a workspace.
+  - name: Versions
+    description: Frozen snapshots of templates. Renders pin a version.
+  - name: Renders
+    description: Async or sync render jobs producing HTML, PDF, or DOCX output.
+  - name: API Keys
+    description: Workspace-scoped bearer tokens.
+paths:
+  /v1/healthz:
+    get:
+      operationId: getHealth
+      tags: [Health]
+      security: []
+      summary: Liveness and queue depth
+      responses:
+        "200":
+          description: Healthy
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Health"
+
+  /v1/templates:
+    get:
+      operationId: listTemplates
+      tags: [Templates]
+      summary: List templates in the current workspace
+      parameters:
+        - $ref: "#/components/parameters/PerPage"
+        - $ref: "#/components/parameters/Cursor"
+      responses:
+        "200":
+          description: A page of templates
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/TemplateList"
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+    post:
+      operationId: createTemplate
+      tags: [Templates]
+      summary: Create a template (draft)
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/TemplateCreate"
+      responses:
+        "201":
+          description: Created
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Template"
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+        "422":
+          $ref: "#/components/responses/Validation"
+
+  /v1/templates/{templateId}:
+    parameters:
+      - $ref: "#/components/parameters/TemplateId"
+    get:
+      operationId: getTemplate
+      tags: [Templates]
+      summary: Fetch a template
+      responses:
+        "200":
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Template"
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+        "404":
+          $ref: "#/components/responses/NotFound"
+    patch:
+      operationId: updateTemplate
+      tags: [Templates]
+      summary: Update the current draft of a template
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/TemplateUpdate"
+      responses:
+        "200":
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Template"
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+        "404":
+          $ref: "#/components/responses/NotFound"
+        "422":
+          $ref: "#/components/responses/Validation"
+    delete:
+      operationId: archiveTemplate
+      tags: [Templates]
+      summary: Archive a template (soft delete)
+      responses:
+        "204":
+          description: Archived
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+        "404":
+          $ref: "#/components/responses/NotFound"
+
+  /v1/templates/{templateId}/fields:
+    parameters:
+      - $ref: "#/components/parameters/TemplateId"
+    get:
+      operationId: getTemplateFields
+      tags: [Templates]
+      summary: Discover the merge-field schema of the current draft
+      description: |
+        Walks the Twig AST of the current `body`, extracts every variable
+        referenced, infers type from usage context (loops → array, etc.),
+        and returns a JSON-schema-ish shape.
+
+        Clients should call this to validate user input *before* submitting
+        a render.
+      responses:
+        "200":
+          description: Field schema
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/FieldSchema"
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+        "404":
+          $ref: "#/components/responses/NotFound"
+        "422":
+          description: Template body could not be parsed
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/Problem"
+
+  /v1/templates/{templateId}/versions:
+    parameters:
+      - $ref: "#/components/parameters/TemplateId"
+    get:
+      operationId: listTemplateVersions
+      tags: [Versions]
+      summary: List frozen versions of a template
+      responses:
+        "200":
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/TemplateVersionList"
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+        "404":
+          $ref: "#/components/responses/NotFound"
+    post:
+      operationId: createTemplateVersion
+      tags: [Versions]
+      summary: Freeze the current draft as a new version
+      description: |
+        Snapshots the current `body` of the template into a new version
+        record. Version label is auto-assigned (`v1`, `v2`, …). Once a
+        version exists, its body is immutable forever — even if the
+        template's current draft changes.
+      responses:
+        "201":
+          description: Frozen
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/TemplateVersion"
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+        "404":
+          $ref: "#/components/responses/NotFound"
+
+  /v1/templates/{templateId}/versions/{versionLabel}:
+    parameters:
+      - $ref: "#/components/parameters/TemplateId"
+      - $ref: "#/components/parameters/VersionLabel"
+    get:
+      operationId: getTemplateVersion
+      tags: [Versions]
+      summary: Fetch a frozen version
+      responses:
+        "200":
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/TemplateVersion"
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+        "404":
+          $ref: "#/components/responses/NotFound"
+
+  /v1/renders:
+    get:
+      operationId: listRenders
+      tags: [Renders]
+      summary: List renders in the current workspace
+      parameters:
+        - $ref: "#/components/parameters/PerPage"
+        - $ref: "#/components/parameters/Cursor"
+        - in: query
+          name: status
+          schema:
+            type: string
+            enum: [queued, rendering, succeeded, failed, cancelled]
+      responses:
+        "200":
+          description: A page of renders
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/RenderList"
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+    post:
+      operationId: createRender
+      tags: [Renders]
+      summary: Submit a render job
+      description: |
+        Submits a render against a frozen template version.
+
+        Default is async — returns `202 Accepted` with a poll URL.
+
+        Add `?sync=true` to block up to `DOCGEN_SYNC_RENDER_TIMEOUT` seconds
+        (default 15s) for a synchronous response. If the render isn't
+        finished in time, the response falls back to the same `202` shape.
+      parameters:
+        - in: query
+          name: sync
+          schema:
+            type: boolean
+            default: false
+        - in: header
+          name: Idempotency-Key
+          schema:
+            type: string
+            maxLength: 128
+          description: |
+            Optional idempotency key. Same key + same template version +
+            same input data hash returns the cached render record. Same
+            key + different inputs returns 409.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/RenderCreate"
+      responses:
+        "200":
+          description: Sync render completed in time
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Render"
+        "202":
+          description: Async render queued (or sync timed out)
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Render"
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+        "409":
+          description: Idempotency key collision with different inputs
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/Problem"
+        "422":
+          $ref: "#/components/responses/Validation"
+
+  /v1/renders/{renderId}:
+    parameters:
+      - $ref: "#/components/parameters/RenderId"
+    get:
+      operationId: getRender
+      tags: [Renders]
+      summary: Poll a render's status
+      responses:
+        "200":
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Render"
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+        "404":
+          $ref: "#/components/responses/NotFound"
+    delete:
+      operationId: cancelRender
+      tags: [Renders]
+      summary: Cancel a queued or in-flight render
+      responses:
+        "204":
+          description: Cancelled
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+        "404":
+          $ref: "#/components/responses/NotFound"
+        "409":
+          description: Render already in a terminal state
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/Problem"
+
+  /v1/renders/{renderId}/outputs/{format}:
+    parameters:
+      - $ref: "#/components/parameters/RenderId"
+      - in: path
+        name: format
+        required: true
+        schema:
+          type: string
+          enum: [html, pdf, docx]
+    get:
+      operationId: downloadRenderOutput
+      tags: [Renders]
+      summary: Redirect to a signed download URL for one output format
+      responses:
+        "302":
+          description: Redirect to the signed URL
+          headers:
+            Location:
+              schema:
+                type: string
+                format: uri
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+        "404":
+          $ref: "#/components/responses/NotFound"
+
+components:
+  securitySchemes:
+    bearerAuth:
+      type: http
+      scheme: bearer
+      bearerFormat: docgen_live_…
+  parameters:
+    PerPage:
+      in: query
+      name: per_page
+      schema:
+        type: integer
+        minimum: 1
+        maximum: 100
+        default: 25
+    Cursor:
+      in: query
+      name: cursor
+      schema:
+        type: string
+    TemplateId:
+      in: path
+      name: templateId
+      required: true
+      schema:
+        type: string
+        pattern: '^[0-9A-HJKMNP-TV-Z]{26}$'
+        description: ULID
+    VersionLabel:
+      in: path
+      name: versionLabel
+      required: true
+      schema:
+        type: string
+        pattern: '^v\d+$'
+    RenderId:
+      in: path
+      name: renderId
+      required: true
+      schema:
+        type: string
+        pattern: '^[0-9A-HJKMNP-TV-Z]{26}$'
+  responses:
+    Unauthorized:
+      description: Missing or invalid bearer token
+      content:
+        application/problem+json:
+          schema:
+            $ref: "#/components/schemas/Problem"
+    NotFound:
+      description: Resource not found (or not visible to the current workspace)
+      content:
+        application/problem+json:
+          schema:
+            $ref: "#/components/schemas/Problem"
+    Validation:
+      description: Validation error
+      content:
+        application/problem+json:
+          schema:
+            $ref: "#/components/schemas/Problem"
+  schemas:
+    Health:
+      type: object
+      required: [healthy, version, queue_depth]
+      properties:
+        healthy:
+          type: boolean
+          example: true
+        version:
+          type: string
+          example: "0.5.0"
+        queue_depth:
+          type: integer
+          example: 0
+        twig_version:
+          type: string
+        php_version:
+          type: string
+    Template:
+      type: object
+      required: [id, name, slug, engine, body, created_at, updated_at]
+      properties:
+        id:
+          type: string
+        name:
+          type: string
+        slug:
+          type: string
+        description:
+          type: string
+          nullable: true
+        engine:
+          type: string
+          enum: [twig]
+          default: twig
+        body:
+          type: string
+          description: HTML + Twig source of the current draft.
+        archived_at:
+          type: string
+          format: date-time
+          nullable: true
+        latest_version_label:
+          type: string
+          nullable: true
+        created_at:
+          type: string
+          format: date-time
+        updated_at:
+          type: string
+          format: date-time
+    TemplateCreate:
+      type: object
+      required: [name, body]
+      properties:
+        name:
+          type: string
+          maxLength: 120
+        slug:
+          type: string
+          maxLength: 80
+          description: Optional. Auto-derived from `name` if omitted.
+        description:
+          type: string
+          maxLength: 500
+        engine:
+          type: string
+          enum: [twig]
+          default: twig
+        body:
+          type: string
+          description: |
+            HTML + Twig source. Hard cap at `DOCGEN_TEMPLATE_BODY_MAX_BYTES`
+            (default 256 KB).
+    TemplateUpdate:
+      type: object
+      properties:
+        name:
+          type: string
+          maxLength: 120
+        slug:
+          type: string
+          maxLength: 80
+        description:
+          type: string
+          maxLength: 500
+        body:
+          type: string
+    TemplateList:
+      type: object
+      required: [data, next_cursor]
+      properties:
+        data:
+          type: array
+          items:
+            $ref: "#/components/schemas/Template"
+        next_cursor:
+          type: string
+          nullable: true
+    TemplateVersion:
+      type: object
+      required: [template_id, label, body, fields_schema, created_at]
+      properties:
+        template_id:
+          type: string
+        label:
+          type: string
+          pattern: '^v\d+$'
+          example: "v3"
+        body:
+          type: string
+        fields_schema:
+          $ref: "#/components/schemas/FieldSchema"
+        created_at:
+          type: string
+          format: date-time
+    TemplateVersionList:
+      type: object
+      required: [data]
+      properties:
+        data:
+          type: array
+          items:
+            $ref: "#/components/schemas/TemplateVersion"
+    FieldSchema:
+      type: object
+      description: |
+        JSON-schema-ish description of every variable referenced in the
+        template body. Types are inferred from usage — `{% for %}` makes
+        a field an array, dotted access makes it an object, default → scalar.
+      required: [fields]
+      properties:
+        fields:
+          type: array
+          items:
+            $ref: "#/components/schemas/Field"
+    Field:
+      type: object
+      required: [name, type]
+      properties:
+        name:
+          type: string
+          example: client_name
+        type:
+          type: string
+          enum: [scalar, array, object]
+        required:
+          type: boolean
+          description: |
+            Always true at this stage — every referenced variable is treated
+            as required. Optional/default-value support is a v2 feature.
+          default: true
+        children:
+          type: array
+          description: For `object` type, the inferred sub-fields.
+          items:
+            $ref: "#/components/schemas/Field"
+        item_type:
+          type: string
+          enum: [scalar, object]
+          description: For `array` type, the type of each item.
+    Render:
+      type: object
+      required: [id, status, template_id, formats_requested, created_at]
+      properties:
+        id:
+          type: string
+        status:
+          type: string
+          enum: [queued, rendering, succeeded, failed, cancelled]
+        template_id:
+          type: string
+        template_version_label:
+          type: string
+        formats_requested:
+          type: array
+          items:
+            type: string
+            enum: [html, pdf, docx]
+        outputs:
+          type: array
+          items:
+            $ref: "#/components/schemas/RenderOutput"
+        duration_ms:
+          type: integer
+          nullable: true
+        input_data_hash:
+          type: string
+          nullable: true
+        input_data_size_bytes:
+          type: integer
+          nullable: true
+        error:
+          $ref: "#/components/schemas/RenderError"
+          nullable: true
+        poll_url:
+          type: string
+          format: uri
+          description: |
+            Convenience field. Equivalent to `/v1/renders/{id}`.
+            Returned on 202 to make polling unambiguous.
+        created_at:
+          type: string
+          format: date-time
+        completed_at:
+          type: string
+          format: date-time
+          nullable: true
+    RenderOutput:
+      type: object
+      required: [format, url, expires_at, bytes, sha256]
+      properties:
+        format:
+          type: string
+          enum: [html, pdf, docx]
+        url:
+          type: string
+          format: uri
+          description: Signed download URL. Expires per `expires_at`.
+        expires_at:
+          type: string
+          format: date-time
+        bytes:
+          type: integer
+        sha256:
+          type: string
+    RenderError:
+      type: object
+      required: [code, message]
+      properties:
+        code:
+          type: string
+          example: template_render_failed
+        message:
+          type: string
+        details:
+          type: object
+          additionalProperties: true
+    RenderCreate:
+      type: object
+      required: [template_id, formats, data]
+      properties:
+        template_id:
+          type: string
+        version:
+          type: string
+          pattern: '^v\d+$'
+          description: |
+            Optional. Defaults to the latest frozen version. If the template
+            has no frozen versions, render returns 422 — drafts cannot be
+            rendered.
+        formats:
+          type: array
+          minItems: 1
+          items:
+            type: string
+            enum: [html, pdf, docx]
+        data:
+          type: object
+          additionalProperties: true
+          description: |
+            Merge-field values. Validated against the version's `fields_schema`
+            on submit; missing fields return 422.
+        signed_url_ttl:
+          type: integer
+          description: |
+            Per-request override for the signed-URL TTL in seconds.
+            Capped at the workspace `default_signed_url_ttl_seconds`'s
+            `DOCGEN_MAX_SIGNED_URL_TTL` (default 86400).
+    RenderList:
+      type: object
+      required: [data, next_cursor]
+      properties:
+        data:
+          type: array
+          items:
+            $ref: "#/components/schemas/Render"
+        next_cursor:
+          type: string
+          nullable: true
+    Problem:
+      type: object
+      description: RFC 7807 problem details
+      required: [type, title, status]
+      properties:
+        type:
+          type: string
+          format: uri
+        title:
+          type: string
+        status:
+          type: integer
+        detail:
+          type: string
+        instance:
+          type: string
+        errors:
+          type: object
+          additionalProperties:
+            type: array
+            items:
+              type: string
