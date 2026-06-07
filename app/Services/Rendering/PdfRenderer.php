@@ -32,13 +32,13 @@ class PdfRenderer implements FormatRenderer
                 '--disable-gpu',
             ]);
 
-        $chrome = env('DOCGEN_CHROME_PATH') ?: $this->detectChromePath();
+        $chrome = config('docgen.chrome_path') ?: $this->detectChromePath();
 
         if ($chrome !== null) {
             $shot = $shot->setChromePath($chrome);
         }
 
-        if ($nodeBin = env('DOCGEN_NODE_BIN')) {
+        if ($nodeBin = config('docgen.node_bin')) {
             $shot = $shot->setNodeBinary($nodeBin);
         }
 

@@ -12,5 +12,12 @@ return [
 
     'sync_render_timeout' => (int) env('DOCGEN_SYNC_RENDER_TIMEOUT', 15),
 
+    // Chromium binary for PDF rendering. When empty, PdfRenderer auto-detects
+    // puppeteer's bundled Chrome under ~/.cache/puppeteer/chrome.
+    'chrome_path' => env('DOCGEN_CHROME_PATH'),
+
+    // Node binary Browsershot should invoke. When empty, uses `node` from PATH.
+    'node_bin' => env('DOCGEN_NODE_BIN'),
+
     'version' => '0.5.0',
 ];

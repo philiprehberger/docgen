@@ -126,9 +126,11 @@ const FILES_TO_STAGE = [
     'config',
     'database',
     'docs',
+    'openapi',
     'public',
     'resources',
     'routes',
+    'sample-templates',
     'scripts',
     'storage/app',
     'storage/framework',
@@ -149,9 +151,11 @@ const FILES_TO_TRANSFER = [
     'config',
     'database',
     'docs',
+    'openapi',
     'public',
     'resources',
     'routes',
+    'sample-templates',
     'scripts',
     'storage/app',
     'storage/framework',
@@ -432,6 +436,10 @@ async function linkSharedResources(ssh, releasePath) {
     // Create public/storage symlink (Laravel's storage:link equivalent)
     // This allows serving uploaded files from storage/app/public via /storage URL
     await execSSH(ssh, `ln -sf ${sharedPath}/storage/app/public ${releasePath}/public/storage`);
+
+    // Symlink the shared puppeteer install so Spatie/Browsershot can require('puppeteer')
+    // from the release directory without us shipping node_modules in every bundle.
+    await execSSH(ssh, `ln -sfn ${sharedPath}/puppeteer/node_modules ${releasePath}/node_modules`);
 
     log('✅', 'Shared resources linked');
 }
@@ -786,7 +794,7 @@ async function deploy(options = {}) {
         if (!options.skipVerify) {
             log('🏥', 'Running post-deploy health check...');
             let healthOk = false;
-            const healthUrl = `https://${process.env.MARKETING_DOMAIN || 'api.docgen.philiprehberger.com'}/health`;
+            const healthUrl = `https://${process.env.MARKETING_DOMAIN || 'api.docgen.philiprehberger.com'}/v1/healthz`;
             for (let attempt = 1; attempt <= 3; attempt++) {
                 try {
                     const result = await execSSH(ssh, `curl -sf --max-time 30 ${healthUrl}`, { ignoreError: true });
