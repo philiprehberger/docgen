@@ -1,0 +1,39 @@
+[build-system]
+requires = ["hatchling"]
+build-backend = "hatchling.build"
+
+[project]
+name = "philiprehberger-docgen"
+version = "0.5.0"
+description = "Official Python SDK for the Docgen document-generation API."
+readme = "README.md"
+requires-python = ">=3.9"
+license = { text = "MIT" }
+authors = [{ name = "Philip Rehberger", email = "hello@philiprehberger.com" }]
+keywords = ["docgen", "document", "generation", "pdf", "docx", "twig", "api"]
+classifiers = [
+    "Development Status :: 4 - Beta",
+    "Intended Audience :: Developers",
+    "License :: OSI Approved :: MIT License",
+    "Programming Language :: Python :: 3",
+    "Programming Language :: Python :: 3.9",
+    "Programming Language :: Python :: 3.10",
+    "Programming Language :: Python :: 3.11",
+    "Programming Language :: Python :: 3.12",
+    "Topic :: Software Development :: Libraries :: Python Modules",
+]
+dependencies = [
+    "urllib3>=2.0",
+    "python-dateutil>=2.8.2",
+    "pydantic>=2.0",
+]
+
+[project.urls]
+Homepage = "https://docgen.philiprehberger.com"
+Source = "https://github.com/philiprehberger/docgen"
+
+[tool.hatch.build.targets.wheel]
+packages = [
+    "generated/philiprehberger_docgen",
+    "philiprehberger_docgen_sdk",
+]

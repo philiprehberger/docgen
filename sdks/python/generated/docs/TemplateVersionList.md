@@ -1,0 +1,29 @@
+# TemplateVersionList
+
+
+## Properties
+
+Name | Type | Description | Notes
+------------ | ------------- | ------------- | -------------
+**data** | [**List[TemplateVersion]**](TemplateVersion.md) |  | 
+
+## Example
+
+```python
+from philiprehberger_docgen.models.template_version_list import TemplateVersionList
+
+# TODO update the JSON string below
+json = "{}"
+# create an instance of TemplateVersionList from a JSON string
+template_version_list_instance = TemplateVersionList.from_json(json)
+# print the JSON string representation of the object
+print(TemplateVersionList.to_json())
+
+# convert the object into a dict
+template_version_list_dict = template_version_list_instance.to_dict()
+# create an instance of TemplateVersionList from a dict
+template_version_list_from_dict = TemplateVersionList.from_dict(template_version_list_dict)
+```
+[[Back to Model list]](../README.md#documentation-for-models) [[Back to API list]](../README.md#documentation-for-api-endpoints) [[Back to README]](../README.md)
+
+

@@ -1,0 +1,6 @@
+typescript/dist/
+typescript/node_modules/
+php/vendor/
+python/dist/
+python/*.egg-info/
+python/.venv/

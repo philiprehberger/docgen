@@ -1,0 +1,45 @@
+{
+  "$schema": "./node_modules/@openapitools/openapi-generator-cli/config.schema.json",
+  "spaces": 2,
+  "generator-cli": {
+    "version": "7.22.0",
+    "generators": {
+      "typescript": {
+        "generatorName": "typescript-fetch",
+        "inputSpec": "openapi/spec.yaml",
+        "output": "sdks/typescript/generated",
+        "additionalProperties": {
+          "npmName": "@philiprehberger/docgen",
+          "npmVersion": "0.5.0",
+          "supportsES6": true,
+          "modelPropertyNaming": "camelCase",
+          "typescriptThreePlus": true,
+          "withInterfaces": true
+        }
+      },
+      "php": {
+        "generatorName": "php",
+        "inputSpec": "openapi/spec.yaml",
+        "output": "sdks/php/generated",
+        "additionalProperties": {
+          "invokerPackage": "Docgen\\Client",
+          "packageName": "DocgenClient",
+          "composerPackageName": "philiprehberger/docgen",
+          "artifactVersion": "0.5.0",
+          "srcBasePath": "src"
+        }
+      },
+      "python": {
+        "generatorName": "python",
+        "inputSpec": "openapi/spec.yaml",
+        "output": "sdks/python/generated",
+        "additionalProperties": {
+          "packageName": "philiprehberger_docgen",
+          "projectName": "philiprehberger-docgen",
+          "packageVersion": "0.5.0",
+          "library": "urllib3"
+        }
+      }
+    }
+  }
+}

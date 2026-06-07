@@ -1,0 +1,32 @@
+{
+  "name": "@philiprehberger/docgen",
+  "version": "0.5.0",
+  "description": "Official TypeScript SDK for the Docgen document-generation API.",
+  "license": "MIT",
+  "author": "Philip Rehberger <hello@philiprehberger.com>",
+  "homepage": "https://docgen.philiprehberger.com",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/philiprehberger/docgen.git",
+    "directory": "sdks/typescript"
+  },
+  "main": "dist/index.js",
+  "module": "dist/index.mjs",
+  "types": "dist/index.d.ts",
+  "sideEffects": false,
+  "files": [
+    "dist",
+    "README.md",
+    "LICENSE"
+  ],
+  "scripts": {
+    "build": "tsup",
+    "typecheck": "tsc --noEmit",
+    "test": "vitest run"
+  },
+  "devDependencies": {
+    "tsup": "^8.0.0",
+    "typescript": "^5.6.0",
+    "vitest": "^2.0.0"
+  }
+}

@@ -10,9 +10,12 @@
         "deploy:rollback": "node scripts/deploy/rollback.cjs",
         "deploy:releases": "node scripts/deploy/releases.cjs",
         "deploy:health": "bash scripts/deploy/health-check.sh",
-        "openapi:lint": "spectral lint openapi/spec.yaml"
+        "openapi:lint": "spectral lint openapi/spec.yaml",
+        "sdk:generate": "rm -rf sdks/typescript/generated sdks/php/generated sdks/python/generated && npx openapi-generator-cli generate -g typescript-fetch -i openapi/spec.yaml -o sdks/typescript/generated --additional-properties npmName=@philiprehberger/docgen,npmVersion=0.5.0,supportsES6=true,modelPropertyNaming=camelCase,typescriptThreePlus=true,withInterfaces=true && npx openapi-generator-cli generate -g php -i openapi/spec.yaml -o sdks/php/generated --additional-properties 'invokerPackage=Docgen\\Client,packageName=DocgenClient,composerPackageName=philiprehberger/docgen,artifactVersion=0.5.0,srcBasePath=src' && npx openapi-generator-cli generate -g python -i openapi/spec.yaml -o sdks/python/generated --additional-properties packageName=philiprehberger_docgen,projectName=philiprehberger-docgen,packageVersion=0.5.0,library=urllib3",
+        "sdk:zip": "bash scripts/build-sdk-zips.sh"
     },
     "devDependencies": {
+        "@openapitools/openapi-generator-cli": "^2.34.0",
         "@stoplight/spectral-cli": "^6.11.0",
         "@tailwindcss/vite": "^4.0.0",
         "concurrently": "^9.0.1",
