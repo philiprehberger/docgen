@@ -4,7 +4,9 @@ namespace App\Http\Controllers\Api\V1;
 
 use App\Http\Controllers\Controller;
 use App\Models\ApiKey;
+use App\Models\Template;
 use App\Models\Workspace;
+use App\Services\Twig\FieldDiscovery;
 use App\Support\ProblemResponse;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
@@ -34,18 +36,18 @@ class SandboxController extends Controller
     public function mint(Request $request): JsonResponse
     {
         $ip = $request->ip() ?? 'unknown';
-        $rateLimitKey = 'sandbox:mint:' . $ip;
+        $rateLimitKey = 'sandbox:mint:'.$ip;
 
         if (Cache::has($rateLimitKey)) {
             return ProblemResponse::make(429, 'Too many requests',
-                'Sandbox keys are limited to one per ' . self::RATE_LIMIT_WINDOW_MINUTES . ' minutes per IP.');
+                'Sandbox keys are limited to one per '.self::RATE_LIMIT_WINDOW_MINUTES.' minutes per IP.');
         }
 
         Cache::put($rateLimitKey, true, now()->addMinutes(self::RATE_LIMIT_WINDOW_MINUTES));
 
         [$workspace, $key, $plaintext] = DB::transaction(function () {
             $workspace = Workspace::create([
-                'name' => 'Sandbox · ' . now()->format('Y-m-d H:i'),
+                'name' => 'Sandbox · '.now()->format('Y-m-d H:i'),
                 'is_sandbox' => true,
                 'default_signed_url_ttl_seconds' => 3600,
                 'max_signed_url_ttl_seconds' => 3600,
@@ -70,8 +72,8 @@ class SandboxController extends Controller
                 'renders_per_day' => 50,
                 'key_lifetime_minutes' => self::KEY_TTL_MINUTES,
             ],
-            'notice' => 'Sandbox keys are read-once and expire after ' . self::KEY_TTL_MINUTES
-                . ' minutes. Do not use sandbox keys against production data.',
+            'notice' => 'Sandbox keys are read-once and expire after '.self::KEY_TTL_MINUTES
+                .' minutes. Do not use sandbox keys against production data.',
         ], 201);
     }
 
@@ -79,20 +81,20 @@ class SandboxController extends Controller
      * Seed the new sandbox workspace with the three reference templates so
      * the try-it console has something to render immediately.
      *
-     * @return array<string, string>  Map of slug → template id.
+     * @return array<string, string> Map of slug → template id.
      */
     private function seedSampleTemplates(Workspace $workspace): array
     {
         $templatesDir = base_path('sample-templates');
 
         $catalog = [
-            'invoice' => $templatesDir . '/invoice.twig',
-            'offer-letter' => $templatesDir . '/offer-letter.twig',
-            'certificate' => $templatesDir . '/certificate.twig',
+            'invoice' => $templatesDir.'/invoice.twig',
+            'offer-letter' => $templatesDir.'/offer-letter.twig',
+            'certificate' => $templatesDir.'/certificate.twig',
         ];
 
         $ids = [];
-        $fieldDiscovery = new \App\Services\Twig\FieldDiscovery;
+        $fieldDiscovery = new FieldDiscovery;
 
         foreach ($catalog as $slug => $path) {
             if (! file_exists($path)) {
@@ -101,7 +103,7 @@ class SandboxController extends Controller
 
             $body = (string) file_get_contents($path);
 
-            $template = \App\Models\Template::create([
+            $template = Template::create([
                 'workspace_id' => $workspace->id,
                 'name' => ucwords(str_replace('-', ' ', $slug)),
                 'slug' => $slug,

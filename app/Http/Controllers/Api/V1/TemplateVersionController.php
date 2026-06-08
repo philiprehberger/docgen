@@ -101,6 +101,6 @@ class TemplateVersionController extends Controller
 
         $n = (int) substr($latest->label, 1);
 
-        return 'v' . ($n + 1);
+        return 'v'.($n + 1);
     }
 }

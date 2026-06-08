@@ -40,11 +40,11 @@ class RendersOverview extends StatsOverviewWidget
                 ->color($successRate >= 95 ? 'success' : ($successRate >= 80 ? 'warning' : 'danger')),
 
             Stat::make('Avg render duration',
-                $avgDuration ? number_format($avgDuration) . ' ms' : '—')
+                $avgDuration ? number_format($avgDuration).' ms' : '—')
                 ->description('succeeded renders, 24h'),
 
             Stat::make('Templates', Template::query()->whereNull('archived_at')->count())
-                ->description(ApiKey::query()->whereNull('revoked_at')->count() . ' API keys active'),
+                ->description(ApiKey::query()->whereNull('revoked_at')->count().' API keys active'),
         ];
     }
 }

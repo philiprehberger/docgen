@@ -6,6 +6,7 @@ use App\Models\ApiKey;
 use App\Models\Render;
 use App\Models\Template;
 use App\Models\Workspace;
+use App\Services\Twig\FieldDiscovery;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\Storage;
 use PHPUnit\Framework\Attributes\Test;
@@ -280,14 +281,14 @@ class RenderTest extends TestCase
         return Template::create([
             'workspace_id' => $this->workspace->id,
             'name' => 'T',
-            'slug' => 't-' . substr(bin2hex(random_bytes(3)), 0, 6),
+            'slug' => 't-'.substr(bin2hex(random_bytes(3)), 0, 6),
             'body' => $body,
         ]);
     }
 
     private function freezeVersion(Template $template)
     {
-        $schema = (new \App\Services\Twig\FieldDiscovery)->discover($template->body);
+        $schema = (new FieldDiscovery)->discover($template->body);
 
         return $template->versions()->create([
             'label' => 'v1',

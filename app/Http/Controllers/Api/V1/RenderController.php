@@ -54,7 +54,7 @@ class RenderController extends Controller
                 'formats' => ['required', 'array', 'min:1'],
                 'formats.*' => ['string'],
                 'data' => ['required', 'array'],
-                'signed_url_ttl' => ['nullable', 'integer', 'min:60', 'max:' . config('docgen.max_signed_url_ttl')],
+                'signed_url_ttl' => ['nullable', 'integer', 'min:60', 'max:'.config('docgen.max_signed_url_ttl')],
             ]);
         } catch (ValidationException $e) {
             return ProblemResponse::validation('Invalid render payload.', $e->errors());
@@ -85,7 +85,7 @@ class RenderController extends Controller
         foreach ($data['formats'] as $format) {
             if (! $engine->supports($format)) {
                 return ProblemResponse::validation('Unsupported output format.', [
-                    'formats' => ["Format `{$format}` is not supported. Supported: " . implode(', ', $this->supportedFormatList($engine))],
+                    'formats' => ["Format `{$format}` is not supported. Supported: ".implode(', ', $this->supportedFormatList($engine))],
                 ]);
             }
         }
@@ -104,7 +104,7 @@ class RenderController extends Controller
 
         if ($dataSize > config('docgen.input_data_max_bytes')) {
             return ProblemResponse::validation('Input data exceeds the maximum size.', [
-                'data' => ['Hard cap is ' . config('docgen.input_data_max_bytes') . ' bytes.'],
+                'data' => ['Hard cap is '.config('docgen.input_data_max_bytes').' bytes.'],
             ]);
         }
 
@@ -290,7 +290,7 @@ class RenderController extends Controller
         $formats = array_values(array_unique($formats));
         sort($formats);
 
-        return hash('sha256', $versionId . '|' . implode(',', $formats) . '|' . $dataHash . '|' . $ttl);
+        return hash('sha256', $versionId.'|'.implode(',', $formats).'|'.$dataHash.'|'.$ttl);
     }
 
     private function mimeFor(string $format): string

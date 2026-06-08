@@ -16,8 +16,8 @@ final class PollRender
     private function __construct() {}
 
     /**
-     * @param  RendersApi  $api      Generated SDK Renders API.
-     * @param  string      $renderId The render to poll.
+     * @param  RendersApi  $api  Generated SDK Renders API.
+     * @param  string  $renderId  The render to poll.
      * @param  array{
      *     max_wait_ms?: int,
      *     initial_interval_ms?: int,

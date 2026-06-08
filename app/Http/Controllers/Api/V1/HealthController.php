@@ -5,6 +5,7 @@ namespace App\Http\Controllers\Api\V1;
 use App\Http\Controllers\Controller;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Support\Facades\Queue;
+use Twig\Environment;
 
 class HealthController extends Controller
 {
@@ -14,7 +15,7 @@ class HealthController extends Controller
             'healthy' => true,
             'version' => (string) config('app.docgen_version', '0.5.0'),
             'queue_depth' => $this->queueDepth(),
-            'twig_version' => \Twig\Environment::VERSION,
+            'twig_version' => Environment::VERSION,
             'php_version' => PHP_VERSION,
         ]);
     }

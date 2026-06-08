@@ -126,7 +126,7 @@ class TemplateVersionTest extends TestCase
         return Template::create([
             'workspace_id' => $this->workspace->id,
             'name' => 'Invoice',
-            'slug' => 'invoice-' . substr(bin2hex(random_bytes(3)), 0, 6),
+            'slug' => 'invoice-'.substr(bin2hex(random_bytes(3)), 0, 6),
             'body' => $body,
         ]);
     }

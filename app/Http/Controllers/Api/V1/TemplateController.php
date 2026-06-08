@@ -44,7 +44,7 @@ class TemplateController extends Controller
                 'slug' => ['nullable', 'string', 'max:80', 'regex:/^[a-z0-9-]+$/i'],
                 'description' => ['nullable', 'string', 'max:500'],
                 'engine' => ['nullable', 'in:twig'],
-                'body' => ['required', 'string', 'max:' . config('docgen.template_body_max_bytes')],
+                'body' => ['required', 'string', 'max:'.config('docgen.template_body_max_bytes')],
             ]);
         } catch (ValidationException $e) {
             return ProblemResponse::validation('Invalid template payload.', $e->errors());
@@ -98,7 +98,7 @@ class TemplateController extends Controller
                 'name' => ['sometimes', 'string', 'max:120'],
                 'slug' => ['sometimes', 'string', 'max:80', 'regex:/^[a-z0-9-]+$/i'],
                 'description' => ['sometimes', 'nullable', 'string', 'max:500'],
-                'body' => ['sometimes', 'string', 'max:' . config('docgen.template_body_max_bytes')],
+                'body' => ['sometimes', 'string', 'max:'.config('docgen.template_body_max_bytes')],
             ]);
         } catch (ValidationException $e) {
             return ProblemResponse::validation('Invalid template payload.', $e->errors());

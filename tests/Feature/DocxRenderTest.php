@@ -94,7 +94,7 @@ class DocxRenderTest extends TestCase
         return Template::create([
             'workspace_id' => $this->workspace->id,
             'name' => 'T',
-            'slug' => 't-' . substr(bin2hex(random_bytes(3)), 0, 6),
+            'slug' => 't-'.substr(bin2hex(random_bytes(3)), 0, 6),
             'body' => $body,
         ]);
     }

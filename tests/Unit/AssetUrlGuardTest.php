@@ -36,7 +36,7 @@ class AssetUrlGuardTest extends TestCase
     #[Test]
     public function it_extracts_forbidden_urls_from_html_attributes_and_css(): void
     {
-        $html = <<<HTML
+        $html = <<<'HTML'
             <img src="http://127.0.0.1/leak.png">
             <a href="https://192.168.1.1/admin">x</a>
             <link href="https://example.com/styles.css">

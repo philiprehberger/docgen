@@ -53,7 +53,7 @@ class PdfRenderer implements FormatRenderer
      */
     private function detectChromePath(): ?string
     {
-        $candidates = glob(($_SERVER['HOME'] ?? '/home/ubuntu') . '/.cache/puppeteer/chrome/*/chrome-linux64/chrome');
+        $candidates = glob(($_SERVER['HOME'] ?? '/home/ubuntu').'/.cache/puppeteer/chrome/*/chrome-linux64/chrome');
 
         if (! $candidates) {
             return null;

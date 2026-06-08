@@ -64,8 +64,8 @@ class RenderEngine
         if ($forbidden !== []) {
             throw new \RuntimeException(
                 'Template references one or more forbidden URLs (private/loopback/link-local hosts): '
-                . implode(', ', array_slice($forbidden, 0, 3))
-                . (count($forbidden) > 3 ? ' …' : '')
+                .implode(', ', array_slice($forbidden, 0, 3))
+                .(count($forbidden) > 3 ? ' …' : '')
             );
         }
 
