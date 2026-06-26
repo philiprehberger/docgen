@@ -759,6 +759,7 @@ async function deploy(options = {}) {
         await execSSH(ssh, `cd ${releasePath} && php artisan config:cache`);
         await execSSH(ssh, `cd ${releasePath} && php artisan route:cache`);
         await execSSH(ssh, `cd ${releasePath} && php artisan view:cache`);
+        await execSSH(ssh, `cd ${releasePath} && php artisan event:cache`);
         log('✅', 'Artisan optimization completed');
 
         // ==== RUN MIGRATIONS ====
@@ -1003,6 +1004,7 @@ async function clearCachedConfigs() {
         await execSSH(ssh, `cd ${currentPath} && php artisan config:cache`);
         await execSSH(ssh, `cd ${currentPath} && php artisan route:cache`);
         await execSSH(ssh, `cd ${currentPath} && php artisan view:cache`);
+        await execSSH(ssh, `cd ${currentPath} && php artisan event:cache`);
 
         // Restart php-fpm so OPcache picks up the new bootstrap/cache/config.php
         // — reload doesn't reliably invalidate cached config classes on this host.
